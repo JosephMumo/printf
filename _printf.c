@@ -1,47 +1,96 @@
-#include <stdarg.h>
 #include "main.h"
-#include <stdio.h>
+
 /**
- *_printf - prints the character and returns the number of the characters
+ * _printf - prints the character and returns the number of the characters
  * @format: pointer to a character
- * @...: parameters to the variadic function
- *
+ * @args: pointer to the arguments
  * Return: The number of characters printed
  */
-int _printf(const char *format, ...)
+int _printf(va_list args, const char *format)
 {
-int count = 0, i;
+	int i, so_len = 0;
+	char c;
 
-va_list data;
-va_start(data, format);
+	for (i = 0; format[i] != '\0'; i++)
+	{
+		if (format[i] == '%')
+		{
+			if (!format[i])
+				return (-1);
+			switch (format[i + 1])
+			{
+			case 'c':
+				c = (char)va_arg(args, int), _putchar(c), i++;
+				break;
+			case 's':
+				so_len += print_str(args), so_len--, i++;
+				break;
+			case '%':
+				_putchar('%'), i++;
+				break;
+			case '\0':
+				so_len = -2;
+				break;
+			case 'd':
+			case 'i':
+				so_len += print_int(args), so_len--;
+				break;
+			case 'R':
+				so_len += print_rot13(args), so_len--, i++;
+				break;
+			case 'u':
+                                so_len += print_u(args), so_len--, i++;
+                                break;
+			case 'o':
+                                so_len += print_o(args), so_len--, i++;
+                                break;
+			case 'b':
+                                so_len += print_b (args), so_len--, i++;
+                                break;
+			case 'x':
+                                so_len += print_x (args), so_len--, i++;
+                                break;
+			case 'X':
+                                so_len += print_X (args), so_len--, i++;
+                                break;
+			case 'p':
+                                so_len += print_p (args), so_len--, i++;
+                                break;
+			case 'S':
+                                so_len += print_S (args), so_len--, i++;
+                                break;
+			case 'r':
+                                so_len += print_r (args), so_len--, i++;
+                                break;
 
-/*_printf("%s", 'Hello'); */
 
-for (i = 0; format[i] != '\0';)
-{
-/* count the number of characters */
-/* print to the screen each character counted */
-if (format[i] != '%')
-{
-count += _putchar(format[i]);
-i++;
+			default:
+				_putchar('%');
+				break;
+			}
+		}
+		else
+			_putchar(format[i]);
+		so_len++;
+	}
+	return (so_len);
 }
-else if (format[i] == '%' && format[i + 1] != ' ')
+
+/**
+ * _printf2 - prints anything
+ * @format: list of argument types passed to the function
+ *
+ * Return: number of characters printed
+ */
+int _printf2(const char *format, ...)
 {
-switch (format[i + 1])
-{
-case 'c':
-/* print the character from the va_arguments */
-count += _putchar(va_arg(data, int));
-break;
-case 's':
-count += print_string(va_arg(data, char *));
-break;
-default:
-break
-}
-i += 2;
-}
-}
-return (count);
+	int so_len;
+	va_list arg_ptr;
+
+	va_start(arg_ptr, format);
+	if (format == NULL)
+		return (-1);
+	so_len = _printf(arg_ptr, format);
+	va_end(arg_ptr);
+	return (so_len);
 }
