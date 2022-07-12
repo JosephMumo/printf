@@ -1,96 +1,47 @@
 #include "main.h"
 
 /**
- * _printf - prints the character and returns the number of the characters
- * @format: pointer to a character
- * @args: pointer to the arguments
- * Return: The number of characters printed
+ * _printf - produces output according to a format
+ * @format: format string containing the characters and the specifiers
+ * Description: this function will call the get_print() function that will
+ * determine which printing function to call depending on the conversion
+ * specifiers contained into fmt
+ * Return: length of the formatted output string
  */
-int _printf(va_list args, const char *format)
+int _printf(const char *format, ...)
 {
-	int i, so_len = 0;
-	char c;
+	int (*pfunc)(va_list, flags_t *);
+	const char *p;
+	va_list arguments;
+	flags_t flags = {0, 0, 0};
 
-	for (i = 0; format[i] != '\0'; i++)
-	{
-		if (format[i] == '%')
-		{
-			if (!format[i])
-				return (-1);
-			switch (format[i + 1])
-			{
-			case 'c':
-				c = (char)va_arg(args, int), _putchar(c), i++;
-				break;
-			case 's':
-				so_len += print_str(args), so_len--, i++;
-				break;
-			case '%':
-				_putchar('%'), i++;
-				break;
-			case '\0':
-				so_len = -2;
-				break;
-			case 'd':
-			case 'i':
-				so_len += print_int(args), so_len--;
-				break;
-			case 'R':
-				so_len += print_rot13(args), so_len--, i++;
-				break;
-			case 'u':
-                                so_len += print_u(args), so_len--, i++;
-                                break;
-			case 'o':
-                                so_len += print_o(args), so_len--, i++;
-                                break;
-			case 'b':
-                                so_len += print_b (args), so_len--, i++;
-                                break;
-			case 'x':
-                                so_len += print_x (args), so_len--, i++;
-                                break;
-			case 'X':
-                                so_len += print_X (args), so_len--, i++;
-                                break;
-			case 'p':
-                                so_len += print_p (args), so_len--, i++;
-                                break;
-			case 'S':
-                                so_len += print_S (args), so_len--, i++;
-                                break;
-			case 'r':
-                                so_len += print_r (args), so_len--, i++;
-                                break;
+	register int count = 0;
 
-
-			default:
-				_putchar('%');
-				break;
-			}
-		}
-		else
-			_putchar(format[i]);
-		so_len++;
-	}
-	return (so_len);
-}
-
-/**
- * _printf2 - prints anything
- * @format: list of argument types passed to the function
- *
- * Return: number of characters printed
- */
-int _printf2(const char *format, ...)
-{
-	int so_len;
-	va_list arg_ptr;
-
-	va_start(arg_ptr, format);
-	if (format == NULL)
+	va_start(arguments, format);
+	if (!format || (format[0] == '%' && !format[1]))
 		return (-1);
-	so_len = _printf2(arg_ptr, format);
-	va_end(arg_ptr);
-	return (so_len);
+	if (format[0] == '%' && format[1] == ' ' && !format[2])
+		return (-1);
+	for (p = format; *p; p++)
+	{
+		if (*p == '%')
+		{
+			p++;
+			if (*p == '%')
+			{
+				count += _putchar('%');
+				continue;
+			}
+			while (get_flag(*p, &flags))
+				p++;
+			pfunc = get_print(*p);
+			count += (pfunc)
+				? pfunc(arguments, &flags)
+				: _printf("%%%c", *p);
+		} else
+			count += _putchar(*p);
+	}
+	_putchar(-1);
+	va_end(arguments);
+	return (count);
 }
