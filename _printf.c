@@ -90,7 +90,7 @@ int _printf2(const char *format, ...)
 	va_start(arg_ptr, format);
 	if (format == NULL)
 		return (-1);
-	so_len = _printf(arg_ptr, format);
+	so_len = _printf2(arg_ptr, format);
 	va_end(arg_ptr);
 	return (so_len);
 }
